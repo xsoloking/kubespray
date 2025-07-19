@@ -17,9 +17,9 @@ bin_dir: /usr/local/bin
 #   port: 1234
 
 ## Internal loadbalancers for apiservers
-# loadbalancer_apiserver_localhost: true
+loadbalancer_apiserver_localhost: true
 # valid options are "nginx" or "haproxy"
-# loadbalancer_apiserver_type: nginx  # valid values "nginx" or "haproxy"
+loadbalancer_apiserver_type: nginx  # valid values "nginx" or "haproxy"
 
 ## Local loadbalancer should use this port
 ## And must be set port 6443
@@ -50,7 +50,7 @@ loadbalancer_apiserver_healthcheck_port: 8081
 # Supported external cloud controllers are: 'openstack', 'vsphere', 'oci', 'huaweicloud', 'hcloud' and 'manual'
 # 'manual' does not install the cloud controller manager used by Kubespray.
 # If you fill in a value other than the above, the check will fail.
-# external_cloud_provider:
+external_cloud_provider: manual
 
 ## Set these proxy values in order to update package manager and docker daemon to use proxies and custom CA for https_proxy if needed
 # http_proxy: ""

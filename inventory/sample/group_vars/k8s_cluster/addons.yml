@@ -4,7 +4,7 @@
 # dashboard_enabled: false
 
 # Helm deployment
-helm_enabled: false
+helm_enabled: true
 
 # Registry deployment
 registry_enabled: false
@@ -69,21 +69,21 @@ local_volume_provisioner_enabled: false
 gateway_api_enabled: false
 
 # Nginx ingress controller deployment
-ingress_nginx_enabled: false
+ingress_nginx_enabled: true
 # ingress_nginx_host_network: false
 # ingress_nginx_service_type: LoadBalancer
 # ingress_nginx_service_annotations:
 #   example.io/loadbalancerIPs: 1.2.3.4
-# ingress_nginx_service_nodeport_http: 30080
-# ingress_nginx_service_nodeport_https: 30081
+ingress_nginx_service_nodeport_http: 30080
+ingress_nginx_service_nodeport_https: 30443
 ingress_publish_status_address: ""
-# ingress_nginx_nodeselector:
-#   kubernetes.io/os: "linux"
-# ingress_nginx_tolerations:
-#   - key: "node-role.kubernetes.io/control-plane"
-#     operator: "Equal"
-#     value: ""
-#     effect: "NoSchedule"
+ingress_nginx_nodeselector:
+  kubernetes.io/os: "linux"
+ingress_nginx_tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Equal"
+    value: ""
+    effect: "NoSchedule"
 # ingress_nginx_namespace: "ingress-nginx"
 # ingress_nginx_insecure_port: 80
 # ingress_nginx_secure_port: 443
@@ -110,7 +110,7 @@ ingress_alb_enabled: false
 # alb_ingress_aws_debug: "false"
 
 # Cert manager deployment
-cert_manager_enabled: false
+cert_manager_enabled: true
 # cert_manager_namespace: "cert-manager"
 # cert_manager_tolerations:
 #   - key: node-role.kubernetes.io/control-plane

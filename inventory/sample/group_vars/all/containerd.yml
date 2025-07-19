@@ -1,7 +1,7 @@
 ---
 # Please see roles/container-engine/containerd/defaults/main.yml for more configuration options
 
-# containerd_storage_dir: "/var/lib/containerd"
+containerd_storage_dir: "/data/lib/containerd"
 # containerd_state_dir: "/run/containerd"
 # containerd_oom_score: 0
 
@@ -44,18 +44,16 @@
 # containerd_metrics_grpc_histogram: false
 
 # Registries defined within containerd.
-# containerd_registries_mirrors:
-#  - prefix: docker.io
-#    mirrors:
-#     - host: https://registry-1.docker.io
-#       capabilities: ["pull", "resolve"]
-#       skip_verify: false
-#       header:
-#         Authorization: "Basic XXX"
+containerd_registries_mirrors:
+ - prefix: 10.140.0.3:5000
+   mirrors:
+    - host: https://10.140.0.3:5000
+      capabilities: ["pull", "resolve"]
+      skip_verify: true
 
 # containerd_max_container_log_line_size: 16384
 
 # containerd_registry_auth:
-#   - registry: 10.0.0.2:5000
-#     username: user
-#     password: pass
+#   - registry: 10.140.0.3:5000
+#     username: ""
+#     password: ""

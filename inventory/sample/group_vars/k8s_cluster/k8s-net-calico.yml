@@ -4,53 +4,48 @@
 # the default value of name
 calico_cni_name: k8s-pod-network
 
-## With calico it is possible to distributed routes with border routers of the datacenter.
+## 边缘节点配置 - 启用路由器对等以支持边缘节点
 ## Warning : enabling router peering will disable calico's default behavior ('node mesh').
 ## The subnets of each nodes will be distributed by the datacenter router
-# peer_with_router: false
+# 对于边缘节点部署，建议启用BGP路由器对等
+peer_with_router: true
 
 # Enables Internet connectivity from containers
-# nat_outgoing: true
-# nat_outgoing_ipv6: true
+nat_outgoing: true
+nat_outgoing_ipv6: true
 
 # Enables Calico CNI "host-local" IPAM plugin
-# calico_ipam_host_local: true
+calico_ipam_host_local: true
 
 # add default ippool name
-# calico_pool_name: "default-pool"
+calico_pool_name: "default-pool"
 
-# add default ippool blockSize
-calico_pool_blocksize: 26
+# add default ippool blockSize (边缘节点建议使用更小的块大小)
+calico_pool_blocksize: 28
 
 # add default ippool CIDR (must be inside kube_pods_subnet, defaults to kube_pods_subnet otherwise)
-# calico_pool_cidr: 1.2.3.4/5
+# calico_pool_cidr: 10.244.0.0/16
 
 # Add default IPV6 IPPool CIDR. Must be inside kube_pods_subnet_ipv6. Defaults to kube_pods_subnet_ipv6 if not set.
 # calico_pool_cidr_ipv6: fd85:ee78:d8a6:8607::1:0000/112
 
-# Global as_num (/calico/bgp/v1/global/as_num)
-# global_as_num: "64512"
+# Global as_num (/calico/bgp/v1/global/as_num) - 边缘节点BGP配置
+global_as_num: "64512"
 
-# If doing peering with node-assigned asn where the globas does not match your nodes, you want this
-# to be true.  All other cases, false.
-# calico_no_global_as_num: false
+# 边缘节点通常需要使用节点分配的ASN，启用此选项
+calico_no_global_as_num: false
 
-# You can set MTU value here. If left undefined or empty, it will
-# not be specified in calico CNI config, so Calico will use built-in
-# defaults. The value should be a number, not a string.
-# calico_mtu: 1500
+# MTU配置 - 边缘节点网络通常MTU较小
+calico_mtu: 1450
 
 # Configure the MTU to use for workload interfaces and tunnels.
-# - If Wireguard is enabled, subtract 60 from your network MTU (i.e 1500-60=1440)
-# - Otherwise, if VXLAN or BPF mode is enabled, subtract 50 from your network MTU (i.e. 1500-50=1450)
-# - Otherwise, if IPIP is enabled, subtract 20 from your network MTU (i.e. 1500-20=1480)
-# - Otherwise, if not using any encapsulation, set to your network MTU (i.e. 1500)
-# calico_veth_mtu: 1440
+# 边缘节点建议使用VXLAN模式，因此MTU减去50
+calico_veth_mtu: 1400
 
-# Advertise Cluster IPs
-# calico_advertise_cluster_ips: true
+# Advertise Cluster IPs - 边缘节点需要通告集群IP
+calico_advertise_cluster_ips: true
 
-# Advertise Service External IPs
+# Advertise Service External IPs - 根据边缘节点需求配置
 # calico_advertise_service_external_ips:
 # - x.x.x.x/24
 # - y.y.y.y/32
@@ -60,67 +55,137 @@ calico_pool_blocksize: 26
 # - x.x.x.x/24
 # - y.y.y.y/16
 
-# Choose data store type for calico: "etcd" or "kdd" (kubernetes datastore)
-# calico_datastore: "kdd"
+# Choose data store type for calico: "kdd" 推荐用于边缘节点
+calico_datastore: "kdd"
 
-# Choose Calico iptables backend: "Legacy", "Auto" or "NFT"
-# calico_iptables_backend: "Auto"
+# Choose Calico iptables backend: "Auto" 适用于大多数边缘环境
+calico_iptables_backend: "Auto"
 
-# Use typha (only with kdd)
-# typha_enabled: false
+# Use typha - 边缘节点强烈建议启用typha以减少etcd负载
+typha_enabled: true
 
 # Generate TLS certs for secure typha<->calico-node communication
-# typha_secure: false
+# 边缘节点安全通信很重要
+typha_secure: true
 
-# Scaling typha: 1 replica per 100 nodes is adequate
+# Scaling typha: 对于边缘节点，可以适当减少副本数
 # Number of typha replicas
-# typha_replicas: 1
+typha_replicas: 2
 
-# Set max typha connections
-# typha_max_connections_lower_limit: 300
+# Set max typha connections - 边缘节点连接数限制
+typha_max_connections_lower_limit: 200
 
-# Set calico network backend: "bird", "vxlan" or "none"
-# bird enable BGP routing, required for ipip and no encapsulation modes
-# calico_network_backend: vxlan
+# 边缘节点推荐使用VXLAN网络后端，因为它可以穿越NAT和防火墙
+calico_network_backend: vxlan
 
 # IP in IP and VXLAN is mutually exclusive modes.
-# set IP in IP encapsulation mode: "Always", "CrossSubnet", "Never"
-# calico_ipip_mode: 'Never'
+# 边缘节点禁用IPIP，使用VXLAN
+calico_ipip_mode: 'Never'
 
-# set VXLAN encapsulation mode: "Always", "CrossSubnet", "Never"
-# calico_vxlan_mode: 'Always'
+# 边缘节点启用VXLAN跨子网模式
+calico_vxlan_mode: 'CrossSubnet'
 
-# set VXLAN port and VNI
-# calico_vxlan_vni: 4096
-# calico_vxlan_port: 4789
+# set VXLAN port and VNI - 边缘节点VXLAN配置
+calico_vxlan_vni: 4096
+calico_vxlan_port: 4789
 
-# Enable eBPF mode
-# calico_bpf_enabled: false
+# 边缘节点可以考虑启用eBPF模式以提高性能（需要内核支持）
+# calico_bpf_enabled: true
 
-# If you want to use non default IP_AUTODETECTION_METHOD, IP6_AUTODETECTION_METHOD for calico node set this option to one of:
-# * can-reach=DESTINATION
-# * interface=INTERFACE-REGEX
-# see https://docs.projectcalico.org/reference/node/configuration
-# calico_ip_auto_method: "interface=eth.*"
-# calico_ip6_auto_method: "interface=eth.*"
+# 边缘节点IP自动检测方法配置
+# 根据边缘节点网络接口命名规则配置
+calico_ip_auto_method: "interface=eth.*,ens.*,eno.*"
+calico_ip6_auto_method: "interface=eth.*,ens.*,eno.*"
 
-# Set FELIX_MTUIFACEPATTERN, Pattern used to discover the host’s interface for MTU auto-detection.
-# see https://projectcalico.docs.tigera.io/reference/felix/configuration
-# calico_felix_mtu_iface_pattern: "^((en|wl|ww|sl|ib)[opsx].*|(eth|wlan|wwan).*)"
+# Set FELIX_MTUIFACEPATTERN for edge nodes
+calico_felix_mtu_iface_pattern: "^((en|wl|ww|sl|ib)[opsx].*|(eth|wlan|wwan).*)"
 
-# Choose the iptables insert mode for Calico: "Insert" or "Append".
-# calico_felix_chaininsertmode: Insert
+# 边缘节点iptables插入模式
+calico_felix_chaininsertmode: Insert
 
-# If you want use the default route interface when you use multiple interface with dynamique route (iproute2)
-# see https://docs.projectcalico.org/reference/node/configuration : FELIX_DEVICEROUTESOURCEADDRESS
-# calico_use_default_route_src_ipaddr: false
+# 边缘节点使用默认路由接口
+calico_use_default_route_src_ipaddr: true
 
-# Enable calico traffic encryption with wireguard
-# calico_wireguard_enabled: false
+# 边缘节点启用WireGuard加密 - 提高边缘网络安全性
+calico_wireguard_enabled: true
 
-# Under certain situations liveness and readiness probes may need tunning
-# calico_node_livenessprobe_timeout: 10
-# calico_node_readinessprobe_timeout: 10
+# 边缘节点探针超时调整 - 网络延迟可能较高
+calico_node_livenessprobe_timeout: 30
+calico_node_readinessprobe_timeout: 30
 
-# Calico apiserver (only with kdd)
-# calico_apiserver_enabled: false
+# Calico apiserver - 边缘节点建议启用以减少etcd直接访问
+calico_apiserver_enabled: true
+
+# 边缘节点特定配置
+# Felix配置项用于边缘节点优化
+calico_felix_extra_env:
+  # 禁用节点间网格BGP，因为边缘节点连通性有限
+  CALICO_DISABLE_FILE_LOGGING: "true"
+  # 设置合适的BGP路由反射器
+  FELIX_ROUTEREFRESHINTERVAL: "90s"
+  # 边缘节点日志级别
+  FELIX_LOGSEVERITYSCREEN: "Info"
+  # 边缘节点健康检查端口
+  FELIX_HEALTHENABLED: "true"
+  FELIX_HEALTHPORT: "9099"
+
+# BGP配置 - 边缘节点专用
+# 禁用全mesh模式，使用路由反射器模式
+calico_rr_enabled: true
+# 指定master节点作为路由反射器
+calico_rr_group: "route-reflector"
+
+# 边缘节点节点选择器标签
+calico_node_extra_labels:
+  node-type: "edge"
+
+# 边缘节点污点配置（可选）
+# calico_node_extra_taints:
+#   - key: "edge-node"
+#     value: "true"
+#     effect: "NoSchedule"
+
+# 边缘节点资源限制
+calico_node_resource_limits:
+  cpu: "200m"
+  memory: "256Mi"
+calico_node_resource_requests:
+  cpu: "100m"
+  memory: "128Mi"
+
+# Typha资源限制（边缘环境优化）
+typha_resource_limits:
+  cpu: "300m"
+  memory: "512Mi"
+typha_resource_requests:
+  cpu: "150m"
+  memory: "256Mi"
+
+# 边缘节点网络策略
+# 允许边缘节点与master节点通信
+calico_allow_edge_to_master: true
+
+# 边缘节点子网配置
+# calico_edge_subnets:
+#   - "192.168.100.0/24"
+#   - "192.168.101.0/24"
+
+# 边缘节点BGP对等配置
+# calico_bgp_peers:
+#   - peer_ip: "192.168.1.1"
+#     as_num: "65000"
+#     # 仅与master节点建立BGP连接
+#     node_selector: "kubernetes.io/hostname in ('master-1', 'master-2', 'master-3')"
+
+# 边缘节点防火墙规则（如果需要）
+# calico_felix_default_endpoint_to_host_action: "ACCEPT"
+# calico_felix_interface_prefix: "cali"
+
+# 边缘节点特定的环境变量
+calico_node_extra_env:
+  # 边缘节点通常需要更长的连接超时
+  FELIX_PROMETHEUSMETRICSENABLED: "false"  # 减少资源消耗
+  FELIX_USAGEREPORTINGENABLED: "false"     # 禁用使用报告
+  # 边缘节点BGP配置
+  CALICO_NODENAME_FILE: "/var/lib/calico/nodename"
+  CALICO_NETWORKING_BACKEND: "vxlan"
